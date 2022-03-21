@@ -24,21 +24,18 @@ bool ledState;
 
 
 void setup() {
-
   Serial.begin(9600);
-  Serial.print("Power up\n");
 
   pinMode(pushButton, INPUT);
   pinMode(motorOne, OUTPUT);  
   pinMode(motorTwo, OUTPUT);
-
   pinMode(LED_BUILTIN, OUTPUT);
 
   vendingState = statesVending::NOT_RUNNING;
-  ledState = false;
 
-  digitalWrite(motorOne, HIGH);
-  digitalWrite(motorTwo, HIGH);  
+  // ledState = false;
+  // digitalWrite(motorOne, HIGH);
+  // digitalWrite(motorTwo, HIGH);  
 }
 
 void loop() {
@@ -49,49 +46,44 @@ void loop() {
   switch( vendingState )
   {
     case statesVending::NOT_RUNNING: 
+      
+      // Turn off motor
+      digitalWrite(motorOne, HIGH);
+      digitalWrite(motorTwo, HIGH);
+      digitalWrite(LED_BUILTIN, LOW);
         
         if (buttonState == HIGH)
         {
-          Serial.print("Start Vending Down\n");
-
           vendingState = statesVending::DOWN;
-          timeVendingStart = millis();
-         
-          // Turn on motor          
-          digitalWrite(motorOne, HIGH);
-          digitalWrite(motorTwo, LOW);
-          
+          timeVendingStart = millis();                   
         }
     break;
 
     case statesVending::DOWN:
-        flashLED();        
+        flashLED();
+        
+        // Turn on motor          
+        digitalWrite(motorOne, HIGH);
+        digitalWrite(motorTwo, LOW);        
    
         if (timeNow - timeVendingStart >= vendingDuration)
         {
-          Serial.print("Start Vending UP\n");
           vendingState = statesVending::UP;
           timeVendingStart = millis();
-
-          // Reverse motor
-          digitalWrite(motorOne, LOW);
-          digitalWrite(motorTwo, HIGH);
         }
 
     break;
 
     case statesVending::UP:
         flashLED();
-   
+        
+        // Reverse motor
+        digitalWrite(motorOne, LOW);
+        digitalWrite(motorTwo, HIGH);
+          
         if (timeNow - timeVendingStart >= vendingDuration)
         {
-          Serial.print("Stop Vending\n");          
           vendingState = statesVending::NOT_RUNNING;
-
-          // Turn off motor
-          digitalWrite(motorOne, HIGH);
-          digitalWrite(motorTwo, HIGH);
-          digitalWrite(LED_BUILTIN, LOW);
         }
 
     break;    
