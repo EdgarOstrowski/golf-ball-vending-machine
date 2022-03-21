@@ -38,7 +38,7 @@ void setup() {
   // digitalWrite(motorTwo, HIGH);  
 }
 
-void loop() {
+void loop() { 
   statusLED();  
   timeNow = millis();
   int buttonState = digitalRead(pushButton);
