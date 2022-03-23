@@ -5,7 +5,8 @@ const int coinThree = 4;
 
 const int motorOne = 8;
 const int motorTwo = 9;
-const int vendingDuration = 5000;
+const int vendingDurationUp = 5000;
+const int vendingDurationDown = 5000;
 
 enum statesVending
 {
@@ -16,6 +17,7 @@ enum statesVending
 
 bool ledState;
 int vendingState;
+int vendingCount = 0 ;
 
 unsigned long timeNow;
 unsigned long timeVendingStart;
@@ -31,14 +33,11 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   vendingState = statesVending::UP;
-  // NOT_RUNNING;
 }
 
 void loop() {
   timeNow = millis();
   updateStatusLED();
-
-  int buttonState = digitalRead(coinOne);
 
   switch ( vendingState )
   {
@@ -49,10 +48,16 @@ void loop() {
       digitalWrite(motorTwo, HIGH);
       digitalWrite(LED_BUILTIN, LOW);
 
-      if (buttonState == HIGH)
+      readInputs();
+
+      if (vendingCount > 0)
       {
+        Serial.print("Start vending down\n");
+        vendingCount = vendingCount - 1;
+
         vendingState = statesVending::DOWN;
         timeVendingStart = millis();
+
       }
       break;
 
@@ -63,8 +68,9 @@ void loop() {
       digitalWrite(motorOne, HIGH);
       digitalWrite(motorTwo, LOW);
 
-      if (timeNow - timeVendingStart >= vendingDuration)
+      if (timeNow - timeVendingStart >= vendingDurationDown)
       {
+        Serial.print("Start vending up\n");        
         vendingState = statesVending::UP;
         timeVendingStart = millis();
       }
@@ -78,12 +84,29 @@ void loop() {
       digitalWrite(motorOne, LOW);
       digitalWrite(motorTwo, HIGH);
 
-      if (timeNow - timeVendingStart >= vendingDuration)
+      if (timeNow - timeVendingStart >= vendingDurationUp)
       {
+        Serial.print("Stop vending\n");
         vendingState = statesVending::NOT_RUNNING;
       }
 
       break;
+  }
+
+}
+
+void readInputs(void)
+{
+
+  if (digitalRead(coinOne) == HIGH)
+  {
+    Serial.print("Coin 1 inserted\n");
+    vendingCount = 1;
+  }
+  if (digitalRead(coinTwo) == HIGH)
+  {
+    Serial.print("Coin 2 inserted\n");
+    vendingCount = 2;
   }
 
 }
