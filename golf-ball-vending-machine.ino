@@ -44,8 +44,7 @@ void loop() {
     case statesVending::NOT_RUNNING:
 
       // Turn off motor
-      digitalWrite(motorOne, HIGH);
-      digitalWrite(motorTwo, HIGH);
+      actuatorStop();
       digitalWrite(LED_BUILTIN, LOW);
 
       readInputs();
@@ -63,14 +62,11 @@ void loop() {
 
     case statesVending::DOWN:
       flashStatusLED();
-
-      // Turn on motor
-      digitalWrite(motorOne, HIGH);
-      digitalWrite(motorTwo, LOW);
+      actuatorExtend();
 
       if (timeNow - timeVendingStart >= vendingDurationDown)
       {
-        Serial.print("Start vending up\n");        
+        Serial.print("Start vending up\n");
         vendingState = statesVending::UP;
         timeVendingStart = millis();
       }
@@ -79,10 +75,7 @@ void loop() {
 
     case statesVending::UP:
       flashStatusLED();
-
-      // Reverse motor
-      digitalWrite(motorOne, LOW);
-      digitalWrite(motorTwo, HIGH);
+      actuatorRetract();
 
       if (timeNow - timeVendingStart >= vendingDurationUp)
       {
@@ -109,6 +102,21 @@ void readInputs(void)
     vendingCount = 2;
   }
 
+}
+
+void actuatorExtend(void) {
+  digitalWrite(motorOne, HIGH);
+  digitalWrite(motorTwo, LOW);
+}
+
+void actuatorRetract(void) {
+  digitalWrite(motorOne, LOW);
+  digitalWrite(motorTwo, HIGH);
+}
+
+void actuatorStop(void) {
+  digitalWrite(motorOne, HIGH);
+  digitalWrite(motorTwo, HIGH);
 }
 
 void updateStatusLED(void)
