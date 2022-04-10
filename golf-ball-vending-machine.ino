@@ -117,7 +117,6 @@ void checkNFC(void)
     return;
   }
 
-  //Show UID on serial monitor
   Serial.print("UID: ");
   String uid= "";
   for (byte i = 0; i < mfrc522.uid.size; i++) 
@@ -132,7 +131,7 @@ void checkNFC(void)
   Serial.println("\n");
   
 
-  if (uid == "E42F332A") //change here the UID of the card/cards that you want to give access
+  if (uid == "E42F332A")
   {
     Serial.println("Valid card");
     vendingCount = 1;
