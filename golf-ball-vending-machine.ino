@@ -1,10 +1,20 @@
 
+#include <SPI.h>
+#include <MFRC522.h>
+ 
+#define SS_PIN 10
+#define RST_PIN 9
+MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
+
+
 const int coinOne = 2;
 const int coinTwo = 3;
 const int coinThree = 4;
 
-const int motorOne = 8;
-const int motorTwo = 9;
+
+const int motorOne = 5;
+const int motorTwo = 6;
+const int vendingLED = 8;
 const int vendingDurationUp = 5000;
 const int vendingDurationDown = 5000;
 
@@ -24,13 +34,19 @@ unsigned long timeVendingStart;
 
 void setup() {
   Serial.begin(9600);
+  Serial.print("Power on\n");
+
+  SPI.begin();      // Initiate  SPI bus
+  mfrc522.PCD_Init();   // Initiate MFRC522  
 
   pinMode(coinOne, INPUT);
   pinMode(coinTwo, INPUT);
   pinMode(coinThree, INPUT);
+  
   pinMode(motorOne, OUTPUT);
   pinMode(motorTwo, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
+  
+  pinMode(8, OUTPUT);
 
   vendingState = statesVending::UP;
 }
@@ -45,7 +61,7 @@ void loop() {
 
       // Turn off motor
       actuatorStop();
-      digitalWrite(LED_BUILTIN, LOW);
+      digitalWrite(vendingLED, LOW);
 
       readInputs();
 
@@ -88,6 +104,48 @@ void loop() {
 
 }
 
+void checkNFC(void) 
+{
+  // Look for new cards
+  if ( ! mfrc522.PICC_IsNewCardPresent()) 
+  {    
+    return;
+  }
+  // Select one of the cards
+  if ( ! mfrc522.PICC_ReadCardSerial()) 
+  {
+    return;
+  }
+
+  //Show UID on serial monitor
+  Serial.print("UID: ");
+  String uid= "";
+  for (byte i = 0; i < mfrc522.uid.size; i++) 
+  {
+     Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? "0" : "");
+     Serial.print(mfrc522.uid.uidByte[i], HEX);
+     uid.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? "0" : ""));
+     uid.concat(String(mfrc522.uid.uidByte[i], HEX));
+  }  
+  uid.toUpperCase();
+
+  Serial.println("\n");
+  
+
+  if (uid == "E42F332A") //change here the UID of the card/cards that you want to give access
+  {
+    Serial.println("Valid card");
+    vendingCount = 1;
+  }
+  else
+  {
+    Serial.println("Invalid card");    
+    delay(3000);
+  }
+
+  
+}
+
 void readInputs(void)
 {
 
@@ -101,6 +159,8 @@ void readInputs(void)
     Serial.print("Coin 2 inserted\n");
     vendingCount = 2;
   }
+
+  checkNFC();
 
 }
 
@@ -134,10 +194,10 @@ void flashStatusLED(void)
 {
   if (ledState == false)
   {
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(vendingLED, HIGH);
   }
   else
   {
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(vendingLED, LOW);
   }
 }
