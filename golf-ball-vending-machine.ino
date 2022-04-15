@@ -38,6 +38,10 @@ typedef struct {
   byte credits;
 } creditTag;
 
+struct uid {
+  byte uidByte[4]; 
+};
+
 creditTag tags[2];
 
 void setup() {
@@ -48,11 +52,13 @@ void setup() {
   tags[0].uid[3] = 42;  // 2A
   tags[0].credits = 2;
 
+/*
   tags[1].uid[0] = 57;  // 39 
   tags[1].uid[1] = 111; // 6F
   tags[1].uid[2] = 21;  // 15
   tags[1].uid[3] = 163; // A3
   tags[1].credits = 0;
+*/
 
   Serial.begin(9600);
   Serial.print("Power on\n");

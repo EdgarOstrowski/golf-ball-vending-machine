@@ -1,14 +1,26 @@
-void checkNFC(void)
+
+bool adminMode = false;
+unsigned long timeAdminMode;
+
+
+uid checkIfCardPresent(void)
 {
+  uid Uid;
+  
+  Uid.uidByte[0] = 0;
+  Uid.uidByte[1] = 0;
+  Uid.uidByte[2] = 0;
+  Uid.uidByte[3] = 0;
+  
   // Look for new cards
   if ( ! mfrc522.PICC_IsNewCardPresent())
   {
-    return;
+    return Uid;
   }
   // Select one of the cards
   if ( ! mfrc522.PICC_ReadCardSerial())
   {
-    return;
+    return Uid;
   }
 
   String uid = "";
@@ -22,13 +34,58 @@ void checkNFC(void)
   Serial.print("UID: ");
   Serial.println(uid);
 
-  for (int tag = 0; tag <= 2; tag++)
+  Uid.uidByte[0] = mfrc522.uid.uidByte[0];
+  Uid.uidByte[1] = mfrc522.uid.uidByte[1];
+  Uid.uidByte[2] = mfrc522.uid.uidByte[2];
+  Uid.uidByte[3] = mfrc522.uid.uidByte[3];
+
+  return Uid;
+}
+
+
+
+
+void checkNFC(void)
+{
+  uid Uid;
+
+  Uid = checkIfCardPresent();  
+
+  if (adminMode){
+
+    Serial.println("Admin Mode");
+
+    if (timeNow - timeAdminMode >= 2000)
+    {
+        adminMode = false;
+        Serial.println("End of Admin Mode");
+    }
+        
+    return;  
+  }
+
+
+  if (
+    Uid.uidByte[0] == 57 ||
+    Uid.uidByte[1] == 111 ||
+    Uid.uidByte[2] == 21 ||
+    Uid.uidByte[3] == 163
+  )
   {
+    Serial.println("Admin card");
+    adminMode = true;
+    timeAdminMode = millis();
+    return;
+  }
+
+  for (int tag = 0; tag < 1; ++tag)
+  {
+
     if (
-      mfrc522.uid.uidByte[0] == tags[tag].uid[0] ||
-      mfrc522.uid.uidByte[1] == tags[tag].uid[1] ||
-      mfrc522.uid.uidByte[2] == tags[tag].uid[2] ||
-      mfrc522.uid.uidByte[3] == tags[tag].uid[3])
+      Uid.uidByte[0] == tags[tag].uid[0] ||
+      Uid.uidByte[1] == tags[tag].uid[1] ||
+      Uid.uidByte[2] == tags[tag].uid[2] ||
+      Uid.uidByte[3] == tags[tag].uid[3])
     {
       Serial.println("Valid card");
 
@@ -37,27 +94,18 @@ void checkNFC(void)
         tags[tag].credits--;
         Serial.print("Credits left: ");
         Serial.println(tags[tag].credits);
-        vendingCount = 1;                        
+        vendingCount = 1;
       }
       else
       {
         Serial.println("No credits on card");
-        delay(2500);  
+        delay(2500);
       }
 
       // Stop on first found tag
       break;
     }
-    
-    /*
-    else
-    {
-      Serial.println("Invalid card");
-      delay(3000);
-    }
-    */
 
   }
-
 
 }
