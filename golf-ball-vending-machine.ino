@@ -1,7 +1,7 @@
 
 #include <SPI.h>
 #include <MFRC522.h>
- 
+
 #define SS_PIN 10
 #define RST_PIN 9
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
@@ -32,20 +32,35 @@ int vendingCount = 0 ;
 unsigned long timeNow;
 unsigned long timeVendingStart;
 
+
+typedef struct {
+  String uid;
+  int credits;
+} creditTag;
+
+creditTag tags[2];
+
 void setup() {
+
+  tags[0].uid = "E42F332A";
+  tags[0].credits = 2;
+  tags[1].uid = "396F15A3";
+  tags[1].credits = 0;
+
+
   Serial.begin(9600);
   Serial.print("Power on\n");
 
   SPI.begin();      // Initiate  SPI bus
-  mfrc522.PCD_Init();   // Initiate MFRC522  
+  mfrc522.PCD_Init();   // Initiate MFRC522
 
   pinMode(coinOne, INPUT);
   pinMode(coinTwo, INPUT);
   pinMode(coinThree, INPUT);
-  
+
   pinMode(motorOne, OUTPUT);
   pinMode(motorTwo, OUTPUT);
-  
+
   pinMode(8, OUTPUT);
 
   vendingState = statesVending::UP;
@@ -104,46 +119,6 @@ void loop() {
 
 }
 
-void checkNFC(void) 
-{
-  // Look for new cards
-  if ( ! mfrc522.PICC_IsNewCardPresent()) 
-  {    
-    return;
-  }
-  // Select one of the cards
-  if ( ! mfrc522.PICC_ReadCardSerial()) 
-  {
-    return;
-  }
-
-  Serial.print("UID: ");
-  String uid= "";
-  for (byte i = 0; i < mfrc522.uid.size; i++) 
-  {
-     Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? "0" : "");
-     Serial.print(mfrc522.uid.uidByte[i], HEX);
-     uid.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? "0" : ""));
-     uid.concat(String(mfrc522.uid.uidByte[i], HEX));
-  }  
-  uid.toUpperCase();
-
-  Serial.println("\n");
-  
-
-  if (uid == "E42F332A")
-  {
-    Serial.println("Valid card");
-    vendingCount = 1;
-  }
-  else
-  {
-    Serial.println("Invalid card");    
-    delay(3000);
-  }
-
-  
-}
 
 void readInputs(void)
 {
