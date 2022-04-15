@@ -34,19 +34,25 @@ unsigned long timeVendingStart;
 
 
 typedef struct {
-  String uid;
-  int credits;
+  byte uid[4];
+  byte credits;
 } creditTag;
 
 creditTag tags[2];
 
 void setup() {
 
-  tags[0].uid = "E42F332A";
+  tags[0].uid[0] = 228; // E4 
+  tags[0].uid[1] = 47;  // 2F
+  tags[0].uid[2] = 51;  // 33
+  tags[0].uid[3] = 42;  // 2A
   tags[0].credits = 2;
-  tags[1].uid = "396F15A3";
-  tags[1].credits = 0;
 
+  tags[1].uid[0] = 57;  // 39 
+  tags[1].uid[1] = 111; // 6F
+  tags[1].uid[2] = 21;  // 15
+  tags[1].uid[3] = 163; // A3
+  tags[1].credits = 0;
 
   Serial.begin(9600);
   Serial.print("Power on\n");
