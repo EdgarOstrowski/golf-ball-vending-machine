@@ -6,12 +6,12 @@ unsigned long timeAdminMode;
 uid checkIfCardPresent(void)
 {
   uid Uid;
-  
+
   Uid.uidByte[0] = 0;
   Uid.uidByte[1] = 0;
   Uid.uidByte[2] = 0;
   Uid.uidByte[3] = 0;
-  
+
   // Look for new cards
   if ( ! mfrc522.PICC_IsNewCardPresent())
   {
@@ -42,26 +42,41 @@ uid checkIfCardPresent(void)
   return Uid;
 }
 
-
-
-
 void checkNFC(void)
 {
   uid Uid;
 
-  Uid = checkIfCardPresent();  
+  Uid = checkIfCardPresent();
 
-  if (adminMode){
 
-    Serial.println("Admin Mode");
+  if (adminMode) {
 
-    if (timeNow - timeAdminMode >= 2000)
+    // Figure out how to handle when tag id is 0000
+    for (int tag = 0; tag < 1; ++tag)
     {
-        adminMode = false;
-        Serial.println("End of Admin Mode");
+
+      if (
+        Uid.uidByte[0] == tags[tag].uid[0] ||
+        Uid.uidByte[1] == tags[tag].uid[1] ||
+        Uid.uidByte[2] == tags[tag].uid[2] ||
+        Uid.uidByte[3] == tags[tag].uid[3])
+      {
+        tags[tag].credits = 2;
+        Serial.println("Tag credits updated");
+        delay(1000);
+      }
+
     }
-        
-    return;  
+    // TODO add tag not in memory
+    // TODO not add admin card
+
+    if (timeNow - timeAdminMode >= 3000)
+    {
+      adminMode = false;
+      Serial.println("End of Admin Mode");
+    }
+
+    return;
   }
 
 
@@ -73,11 +88,15 @@ void checkNFC(void)
   )
   {
     Serial.println("Admin card");
+    Serial.println("Admin Mode");
     adminMode = true;
     timeAdminMode = millis();
+
     return;
   }
 
+
+  // Figure out how to handle when tag id is 0000
   for (int tag = 0; tag < 1; ++tag)
   {
 

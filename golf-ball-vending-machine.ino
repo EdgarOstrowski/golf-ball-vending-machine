@@ -4,17 +4,17 @@
 
 #define SS_PIN 10
 #define RST_PIN 9
-MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
+MFRC522 mfrc522(SS_PIN, RST_PIN);
 
+#define COIN_ONE_PIN 2
+#define COIN_TWO_PIN 3
+#define COIN_THREE_PIN 4
 
-const int coinOne = 2;
-const int coinTwo = 3;
-const int coinThree = 4;
+#define MOTOR_ONE 5
+#define MOTOR_TWO 6
 
+#define VENDING_LED 8
 
-const int motorOne = 5;
-const int motorTwo = 6;
-const int vendingLED = 8;
 const int vendingDurationUp = 5000;
 const int vendingDurationDown = 5000;
 
@@ -39,39 +39,31 @@ typedef struct {
 } creditTag;
 
 struct uid {
-  byte uidByte[4]; 
+  byte uidByte[4];
 };
 
 creditTag tags[2];
 
 void setup() {
 
-  tags[0].uid[0] = 228; // E4 
+  tags[0].uid[0] = 228; // E4
   tags[0].uid[1] = 47;  // 2F
   tags[0].uid[2] = 51;  // 33
   tags[0].uid[3] = 42;  // 2A
   tags[0].credits = 2;
 
-/*
-  tags[1].uid[0] = 57;  // 39 
-  tags[1].uid[1] = 111; // 6F
-  tags[1].uid[2] = 21;  // 15
-  tags[1].uid[3] = 163; // A3
-  tags[1].credits = 0;
-*/
-
   Serial.begin(9600);
   Serial.print("Power on\n");
 
-  SPI.begin();      // Initiate  SPI bus
-  mfrc522.PCD_Init();   // Initiate MFRC522
+  SPI.begin();
+  mfrc522.PCD_Init();
 
-  pinMode(coinOne, INPUT);
-  pinMode(coinTwo, INPUT);
-  pinMode(coinThree, INPUT);
+  pinMode(COIN_ONE_PIN, INPUT);
+  pinMode(COIN_TWO_PIN, INPUT);
+  pinMode(COIN_THREE_PIN, INPUT);
 
-  pinMode(motorOne, OUTPUT);
-  pinMode(motorTwo, OUTPUT);
+  pinMode(MOTOR_ONE, OUTPUT);
+  pinMode(MOTOR_TWO, OUTPUT);
 
   pinMode(8, OUTPUT);
 
@@ -88,7 +80,7 @@ void loop() {
 
       // Turn off motor
       actuatorStop();
-      digitalWrite(vendingLED, LOW);
+      digitalWrite(VENDING_LED, LOW);
 
       readInputs();
 
@@ -131,16 +123,15 @@ void loop() {
 
 }
 
-
 void readInputs(void)
 {
 
-  if (digitalRead(coinOne) == HIGH)
+  if (digitalRead(COIN_ONE_PIN) == HIGH)
   {
     Serial.print("Coin 1 inserted\n");
     vendingCount = 1;
   }
-  if (digitalRead(coinTwo) == HIGH)
+  if (digitalRead(COIN_TWO_PIN) == HIGH)
   {
     Serial.print("Coin 2 inserted\n");
     vendingCount = 2;
@@ -151,18 +142,18 @@ void readInputs(void)
 }
 
 void actuatorExtend(void) {
-  digitalWrite(motorOne, HIGH);
-  digitalWrite(motorTwo, LOW);
+  digitalWrite(MOTOR_ONE, HIGH);
+  digitalWrite(MOTOR_TWO, LOW);
 }
 
 void actuatorRetract(void) {
-  digitalWrite(motorOne, LOW);
-  digitalWrite(motorTwo, HIGH);
+  digitalWrite(MOTOR_ONE, LOW);
+  digitalWrite(MOTOR_TWO, HIGH);
 }
 
 void actuatorStop(void) {
-  digitalWrite(motorOne, HIGH);
-  digitalWrite(motorTwo, HIGH);
+  digitalWrite(MOTOR_ONE, HIGH);
+  digitalWrite(MOTOR_TWO, HIGH);
 }
 
 void updateStatusLED(void)
@@ -180,10 +171,10 @@ void flashStatusLED(void)
 {
   if (ledState == false)
   {
-    digitalWrite(vendingLED, HIGH);
+    digitalWrite(VENDING_LED, HIGH);
   }
   else
   {
-    digitalWrite(vendingLED, LOW);
+    digitalWrite(VENDING_LED, LOW);
   }
 }
